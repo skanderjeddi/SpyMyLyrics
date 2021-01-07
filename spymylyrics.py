@@ -112,7 +112,7 @@ def main():
         # Print useful information
         print(f'\nTrack: {song}\nArtist: {artist}\nAlbum: {album}\nLyrics: \n')
         # Fix the formatting issues in the code issued by the Genius query (maybe create an issue on the GitHub down the line?)
-        lyrics_formatter = lambda l: l.replace('(\n', '(').replace('\n)', ')').replace('[\n', '[').replace('\n]', ']').replace("&\n", '&').replace("\n&", '&').replace("& \n", '& ')
+        lyrics_formatter = lambda l: l.replace('(\n', '(').replace('\n)', ')').replace('[\n', '[').replace('\n]', ']').replace("&\n", '&').replace("\n & \n", ' &').replace("\n&", '&').replace("& \n", '& ').replace(",\n", ', ').replace("\n,", ',')
         if lyrics[1] == 'G': # 'G' mode means the lyrics are fetched straight from the datbabase
             print(lyrics_formatter(lyrics[0]))
         else: # Lyrics have been loaded from the local cache
