@@ -97,7 +97,7 @@ def write_to_disk(artist, song, lyrics, album):
     cache_file_name = f'{stripped_artist}/{stripped_song}.lrcs'
     pathlib.Path(f'cache/{stripped_artist}').mkdir(parents=True, exist_ok=True)
     with open(f'cache/{cache_file_name}', 'w') as cache_file:
-        cache_file.write(album if album != None else '(None)' + "\n")
+        cache_file.write((album if album != None else '(None)') + "\n")
         cache_file.writelines(lyrics)
     print('\tdone!', end='')
 
@@ -110,9 +110,9 @@ def main():
         # Get the lyrics & the album, either from the disk or from the Genius API
         lyrics, album = fetch_lyrics(song, artist)
         # Print useful information
-        print(f'\nTrack: {song}\nArtist: {artist}\nAlbum: {album}\nLyrics: \n')
+        print(f'\nTrack: {song}\nArtist: {artist}\nAlbum: {album}\nLyrics:\n')
         # Fix the formatting issues in the code issued by the Genius query (maybe create an issue on the GitHub down the line?)
-        lyrics_formatter = lambda l: l.replace('(\n', '(').replace('\n)', ')').replace('[\n', '[').replace('\n]', ']').replace("&\n", '&').replace("\n & \n", ' &').replace("\n&", '&').replace("& \n", '& ').replace(",\n", ', ').replace("\n,", ',')
+        lyrics_formatter = lambda l: l.replace('(\n', '(').replace('\n (', '(').replace('\n)', ')').replace('[\n', '[').replace('\n]', ']').replace("&\n", '&').replace("\n & \n", ' &').replace("\n&", '&').replace("& \n", '& ').replace(",\n", ', ').replace("\n,", ',').replace(" \n", " ").replace(" \n)", ")")
         if lyrics[1] == 'G': # 'G' mode means the lyrics are fetched straight from the datbabase
             print(lyrics_formatter(lyrics[0]))
         else: # Lyrics have been loaded from the local cache
