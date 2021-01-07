@@ -46,6 +46,12 @@ VERSION = 'R1.0'
 # This is generated through the Genius API: https://genius.com/api-clients
 CLIENT_ACCESS_TOKEN = config('GENIUS_CLIENT_ACCESS_TOKEN')
 
+# SAVE FILES?
+SAVE = True
+
+# REFRESH DELAY IN SECONDS
+REFRESH_DELAY = 3
+
 # Store an instance of Genius
 genius = lyricsgenius.Genius(CLIENT_ACCESS_TOKEN)
 
@@ -129,10 +135,10 @@ def main():
                     for line in lyrics[0]:
                         print(lyrics_formatter(line), end='')
                     print()
-                if lyrics[1] == 'G': # If the song is new, write the lyrics on the disk
+                if lyrics[1] == 'G' and SAVE: # If the song is new, write the lyrics on the disk
                     write_to_disk(artist, song, lyrics[0], album)
                 print('\n(CTRL-C to quit)')
-            time.sleep(5)   
+            time.sleep(REFRESH_DELAY)   
     except KeyboardInterrupt:
         print('Thanks!')
     except SpotifyClosed or SpotifyClosed or SpotifyNotRunning:
