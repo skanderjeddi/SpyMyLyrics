@@ -27,7 +27,7 @@ Utility library to query the current Spotify track
 PyPI page: https://pypi.org/project/SwSpotify/
 GitHub page: https://github.com/SwagLyrics/SwSpotify
 '''
-from SwSpotify import spotify
+from SwSpotify import spotify, SpotifyClosed, SpotifyNotRunning, SpotifyPaused
 '''
 Utility library to quety the Genius database for track informations
 PyPI page: https://pypi.org/project/lyricsgenius/
@@ -38,6 +38,7 @@ import lyricsgenius
 import os
 import re
 import pathlib
+import time
 from decouple import config
 
 # Program version
@@ -103,30 +104,39 @@ def write_to_disk(artist, song, lyrics, album):
 
 # Runs the main program indefinitely until user exit
 def main():
-    while True:
-        # Get the current track & artist from Spotify (spotify must be running & playing!)
-        current_track = spotify.current()
-        song, artist = current_track[0], current_track[1]
-        # Get the lyrics & the album, either from the disk or from the Genius API
-        lyrics, album = fetch_lyrics(song, artist)
-        # Print useful information
-        print(f'\nTrack: {song}\nArtist: {artist}\nAlbum: {album}\nLyrics:\n')
-        # Fix the formatting issues in the code issued by the Genius query (maybe create an issue on the GitHub down the line?)
-        lyrics_formatter = lambda l: l.replace('(\n', '(').replace('\n (', '(').replace('\n)', ')').replace('[\n', '[').replace('\n]', ']').replace("&\n", '&').replace("\n & \n", ' &').replace("\n&", '&').replace("& \n", '& ').replace(",\n", ', ').replace("\n,", ',').replace(" \n", " ").replace(" \n)", ")")
-        if lyrics[1] == 'G': # 'G' mode means the lyrics are fetched straight from the datbabase
-            print(lyrics_formatter(lyrics[0]))
-        else: # Lyrics have been loaded from the local cache
-            for line in lyrics[0]:
-                print(lyrics_formatter(line), end='')
-            print()
-        if lyrics[1] == 'G': # If the song is new, write the lyrics on the disk
-            write_to_disk(artist, song, lyrics[0], album)
-        print('\nEnter any key to refresh, q to quit: ', end='')
-        prompt = input().lower()
-        if prompt == 'q':
-            exit(0)
-        else:
-            main()
+    song_change = True
+    try:
+        current_track = None
+        while True:
+            new_track = spotify.current()
+            if new_track != current_track:
+                song_change = True
+                current_track = new_track
+            else:
+                song_change = False
+            if song_change:
+                # Get the current track & artist from Spotify (spotify must be running & playing!)
+                song, artist = current_track[0], current_track[1]
+                # Get the lyrics & the album, either from the disk or from the Genius API
+                lyrics, album = fetch_lyrics(song, artist)
+                # Print useful information
+                print(f'\nTrack: {song}\nArtist: {artist}\nAlbum: {album}\nLyrics:\n')
+                # Fix the formatting issues in the code issued by the Genius query (maybe create an issue on the GitHub down the line?)
+                lyrics_formatter = lambda l: l.replace('(\n', '(').replace('\n (', '(').replace('\n)', ')').replace('[\n', '[').replace('\n]', ']').replace("&\n", '&').replace("\n & \n", ' &').replace("\n&", '&').replace("& \n", '& ').replace(",\n", ', ').replace("\n,", ',').replace(" \n", " ").replace(" \n)", ")")
+                if lyrics[1] == 'G': # 'G' mode means the lyrics are fetched straight from the datbabase
+                    print(lyrics_formatter(lyrics[0]))
+                else: # Lyrics have been loaded from the local cache
+                    for line in lyrics[0]:
+                        print(lyrics_formatter(line), end='')
+                    print()
+                if lyrics[1] == 'G': # If the song is new, write the lyrics on the disk
+                    write_to_disk(artist, song, lyrics[0], album)
+                print('\n(CTRL-C to quit)')
+            time.sleep(5)   
+    except KeyboardInterrupt:
+        print('Thanks!')
+    except SpotifyClosed or SpotifyClosed or SpotifyNotRunning:
+        print("Spotify isn't running or is paused!")
 
 # Entry point
 if __name__ == "__main__":
