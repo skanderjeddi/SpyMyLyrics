@@ -63,6 +63,8 @@ def fetch_lyrics(song, artist):
                 print('Cound not find lyrics in the Genius database!')
                 exit(-1)
             else:
+                if album == None:
+                    albium = '(None)'
                 return ((genius_query.lyrics, 'G'), album)
         except:
             print('An exception occurred while fetching lyrics from the Genius database!')
@@ -95,7 +97,7 @@ def write_to_disk(artist, song, lyrics, album):
     cache_file_name = f'{stripped_artist}/{stripped_song}.lrcs'
     pathlib.Path(f'cache/{stripped_artist}').mkdir(parents=True, exist_ok=True)
     with open(f'cache/{cache_file_name}', 'w') as cache_file:
-        cache_file.write(album + "\n")
+        cache_file.write(album if album != None else '(None)' + "\n")
         cache_file.writelines(lyrics)
     print('\tdone!', end='')
 
