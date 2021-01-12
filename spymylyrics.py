@@ -74,8 +74,7 @@ def fetch_lyrics(song, artist):
                     albium = '(None)'
                 return ((genius_query.lyrics, 'G'), album)
         except:
-            print('An exception occurred while fetching lyrics from the Genius database!')
-            exit(-1)
+            return None
     else:
         return ((from_disk[0], 'C'), from_disk[1])
 
@@ -109,42 +108,58 @@ def write_to_disk(artist, song, lyrics, album):
     print('\tdone!', end='')
 
 # Runs the main program indefinitely until user exit
-def main():
+def main(delay):
     song_change = True
     try:
         current_track = None
         while True:
-            new_track = spotify.current()
-            if new_track != current_track:
-                song_change = True
-                current_track = new_track
-            else:
-                song_change = False
-            if song_change:
-                # Get the current track & artist from Spotify (spotify must be running & playing!)
-                song, artist = current_track[0], current_track[1]
-                # Get the lyrics & the album, either from the disk or from the Genius API
-                lyrics, album = fetch_lyrics(song, artist)
-                # Print useful information
-                print(f'\nTrack: {song}\nArtist: {artist}\nAlbum: {album}\nLyrics:\n')
-                # Fix the formatting issues in the code issued by the Genius query (maybe create an issue on the GitHub down the line?)
-                lyrics_formatter = lambda l: l.replace('(\n', '(').replace('\n (', '(').replace('\n)', ')').replace('[\n', '[').replace('\n]', ']').replace("&\n", '&').replace("\n & \n", ' &').replace("\n&", '&').replace("& \n", '& ').replace(",\n", ', ').replace("\n,", ',').replace(" \n", " ").replace(" \n)", ")")
-                if lyrics[1] == 'G': # 'G' mode means the lyrics are fetched straight from the datbabase
-                    print(lyrics_formatter(lyrics[0]))
-                else: # Lyrics have been loaded from the local cache
-                    for line in lyrics[0]:
-                        print(lyrics_formatter(line), end='')
-                    print()
-                if lyrics[1] == 'G' and SAVE: # If the song is new, write the lyrics on the disk
-                    write_to_disk(artist, song, lyrics[0], album)
-                print('\n(CTRL-C to quit)')
-            time.sleep(REFRESH_DELAY)   
+            try:
+                new_track = spotify.current()
+                if new_track != current_track:
+                    song_change = True
+                    current_track = new_track
+                else:
+                    song_change = False
+                if song_change:
+                    # Get the current track & artist from Spotify (spotify must be running & playing!)
+                    song, artist = current_track[0], current_track[1]
+                    # Get the lyrics & the album, either from the disk or from the Genius API
+                    lyrics = None
+                    album = None
+                    try:
+                        lyrics, album = fetch_lyrics(song, artist)
+                    except TypeError:
+                        print('\nNo lyrics found!')
+                        print('(CTRL-C to quit)\n')
+                        continue
+                    # Print useful information
+                    print(f'\nTrack: {song}\nArtist: {artist}\nAlbum: {album}\nLyrics:\n')
+                    # Fix the formatting issues in the code issued by the Genius query (maybe create an issue on the GitHub down the line?)
+                    lyrics_formatter = lambda l: l.replace('(\n', '(').replace('\n (', '(').replace('\n)', ')').replace('[\n', '[').replace('\n]', ']').replace("&\n", '&').replace("\n & \n", ' & ').replace("\n&", '&').replace("& \n", '& ').replace(",\n", ', ').replace("\n, ", ', ').replace(" \n", " ").replace(" \n)", ")").replace(")\n, ", ",")
+                    if lyrics[1] == 'G': # 'G' mode means the lyrics are fetched straight from the datbabase
+                        print(lyrics_formatter(lyrics[0]))
+                    else: # Lyrics have been loaded from the local cache
+                        for line in lyrics[0]:
+                            print(lyrics_formatter(line), end='')
+                        print()
+                    if lyrics[1] == 'G' and SAVE: # If the song is new, write the lyrics on the disk
+                        write_to_disk(artist, song, lyrics[0], album)
+                    print('\n(CTRL-C to quit)\n')
+                time.sleep(REFRESH_DELAY)
+                delay = 1
+            except SpotifyPaused:
+                pass
+            except SpotifyClosed:
+                print(f'Spotify seems to be closed... will try again in {delay} minute(s)')
+                print('Warning: for macOS users, Spotify will be started everytime an attempt is made!')
+                time.sleep(delay * 60)
+                delay += 1
+                main(delay)
     except KeyboardInterrupt:
         print('Thanks!')
-    except SpotifyClosed or SpotifyClosed or SpotifyNotRunning:
-        print("Spotify isn't running or is paused!")
+    
 
 # Entry point
 if __name__ == "__main__":
     print(f'SpyMyLyrics {VERSION} - by Skander Jeddi\n')
-    main()
+    main(1)
