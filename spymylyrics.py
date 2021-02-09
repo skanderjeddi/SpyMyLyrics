@@ -36,6 +36,7 @@ GitHub page: https://github.com/johnwmillr/lyricsgenius
 import lyricsgenius
 
 import os
+import sys
 import re
 import pathlib
 import time
@@ -71,7 +72,7 @@ def fetch_lyrics(song, artist):
                 exit(-1)
             else:
                 if album == None:
-                    albium = '(None)'
+                    album = '(None)'
                 return ((genius_query.lyrics, 'G'), album)
         except:
             return None
@@ -85,7 +86,7 @@ Returns None is no cache file is present, else returns a (lyrics, album) tuple.
 def read_from_disk(artist, song):
     stripped_artist, stripped_song = re.sub('\W+', '', artist.lower().strip()), re.sub('\W+', '', song.lower().strip())
     cache_file_name = f'{stripped_artist}/{stripped_song}.lrcs'
-    print(f"Looking for {cache_file_name} in cache...")
+    print(f"\nLooking for {cache_file_name} in cache...")
     try:
         cache_file = open(f'cache/{cache_file_name}', 'r')
         lines = cache_file.readlines()
@@ -130,8 +131,12 @@ def main(delay):
                         lyrics, album = fetch_lyrics(song, artist)
                     except TypeError:
                         print('\nNo lyrics found!')
-                        print('(CTRL-C to quit)\n')
+                        print('(CTRL-C to quit)', end='')
                         continue
+                    # macOS only: clear the screen & change the window title
+                    if sys.platform == 'darwin':
+                        os.system('clear')
+                        print('\033]0;', artist, '-', song, '\007')
                     # Print useful information
                     print(f'\nTrack: {song}\nArtist: {artist}\nAlbum: {album}\nLyrics:\n')
                     # Fix the formatting issues in the code issued by the Genius query (maybe create an issue on the GitHub down the line?)
@@ -144,7 +149,7 @@ def main(delay):
                         print()
                     if lyrics[1] == 'G' and SAVE: # If the song is new, write the lyrics on the disk
                         write_to_disk(artist, song, lyrics[0], album)
-                    print('\n(CTRL-C to quit)\n')
+                    print('\n(CTRL-C to quit)', end='')
                 time.sleep(REFRESH_DELAY)
                 delay = 1
             except SpotifyPaused:
@@ -156,7 +161,7 @@ def main(delay):
                 delay += 1
                 main(delay)
     except KeyboardInterrupt:
-        print('Thanks!')
+        print('\nThanks!')
     
 
 # Entry point
