@@ -1,4 +1,4 @@
-# Foobar
+# SpyMyLyrics
 
 SpyMyLyrics is a Python application to get the lyrics to the currently playing Spotify song.
 
