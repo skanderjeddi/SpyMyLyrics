@@ -86,7 +86,7 @@ Returns None is no cache file is present, else returns a (lyrics, album) tuple.
 def read_from_disk(artist, song):
     stripped_artist, stripped_song = re.sub('\W+', '', artist.lower().strip()), re.sub('\W+', '', song.lower().strip())
     cache_file_name = f'{stripped_artist}/{stripped_song}.lrcs'
-    print(f"\nLooking for {cache_file_name} in cache...")
+    print(f"\n\nLooking for {cache_file_name} in cache...")
     try:
         cache_file = open(f'cache/{cache_file_name}', 'r')
         lines = cache_file.readlines()
@@ -140,7 +140,7 @@ def main(delay):
                     # Print useful information
                     print(f'\nTrack: {song}\nArtist: {artist}\nAlbum: {album}\nLyrics:\n')
                     # Fix the formatting issues in the code issued by the Genius query (maybe create an issue on the GitHub down the line?)
-                    lyrics_formatter = lambda l: l.replace('(\n', '(').replace('\n (', '(').replace('\n)', ')').replace('[\n', '[').replace('\n]', ']').replace("&\n", '&').replace("\n & \n", ' & ').replace("\n&", '&').replace("& \n", '& ').replace(",\n", ', ').replace("\n, ", ', ').replace(" \n", " ").replace(" \n)", ")").replace(")\n, ", ",")
+                    lyrics_formatter = lambda l: l.replace('(\n', '(').replace('\n (', ' (').replace('\n)', ')').replace('[\n', '[').replace('\n]', ']').replace("&\n", '&').replace("\n & \n", ' & ').replace("\n&", '&').replace("& \n", '& ').replace(",\n", ', ').replace("\n, ", ', ').replace(" \n", " ").replace(" \n)", ")").replace(")\n, ", ",")
                     if lyrics[1] == 'G': # 'G' mode means the lyrics are fetched straight from the datbabase
                         print(lyrics_formatter(lyrics[0]))
                     else: # Lyrics have been loaded from the local cache
@@ -166,5 +166,5 @@ def main(delay):
 
 # Entry point
 if __name__ == "__main__":
-    print(f'SpyMyLyrics {VERSION} - by Skander Jeddi\n')
+    print(f'SpyMyLyrics {VERSION} - by Skander Jeddi')
     main(1)
