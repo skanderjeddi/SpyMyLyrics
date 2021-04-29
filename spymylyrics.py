@@ -65,6 +65,8 @@ def fetch_lyrics(song, artist):
     if from_disk == None:
         print('Lyrics not found in cache, querying the Genius API...')
         try:
+            if ' - Single Version' in song:
+                song = song.replace(' - Single Version', '')
             genius_query = genius.search_song(song, artist)
             album = genius_query.album
             if genius_query == None:
@@ -155,7 +157,7 @@ def main(delay):
             except SpotifyPaused:
                 pass
             except SpotifyClosed:
-                print(f'Spotify seems to be closed... will try again in {delay} minute(s)')
+                print(f'\nSpotify seems to be closed... will try again in {delay} minute(s)')
                 print('Warning: for macOS users, Spotify will be started everytime an attempt is made!')
                 time.sleep(delay * 60)
                 delay += 1
